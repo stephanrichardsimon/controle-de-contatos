@@ -25,4 +25,7 @@ npm run dev
 
 # Abrir em outro bash
 npm run api
+
+# Projeto roda na porta 3000, API roda na porta 3001
+http://localhost:3000/
 ```
