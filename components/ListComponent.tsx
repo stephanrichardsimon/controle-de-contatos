@@ -13,22 +13,32 @@ export default function ListComponent() {
   const [rows, setRows] = React.useState<any[]>([]);
 
   function remove(id) {
-    api
-      .delete(`/contacts/${id}`)
-      .then(() => {
-        Swal.fire({
-          title: "Bom trabalho!",
-          text: "Registro removido com sucesso!",
-          icon: "success",
-        }).then(() => fetchData());
-      })
-      .catch(() => {
-        Swal.fire({
-          title: "Oh,não!",
-          text: "Falha ao remover!",
-          icon: "error",
-        });
-      });
+    Swal.fire({
+      title: "Tem certeza que deseja remover o registro?",
+      showCancelButton: true,
+      confirmButtonText: "Sim",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        api
+          .delete(`/contacts/${id}`)
+          .then(() => {
+            Swal.fire({
+              title: "Bom trabalho!",
+              text: "Registro removido com sucesso!",
+              icon: "success",
+            }).then(() => fetchData());
+          })
+          .catch(() => {
+            Swal.fire({
+              title: "Oh,não!",
+              text: "Falha ao remover!",
+              icon: "error",
+            });
+          });
+      } else if (result.isDenied) {
+        return;
+      }
+    });
   }
 
   const NoRowsOverlay = () => (
