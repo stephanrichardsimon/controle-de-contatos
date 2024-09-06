@@ -5,7 +5,12 @@ import { Button, IconButton, Typography } from "@mui/material";
 import api from "../api/api";
 import Swal from "sweetalert2";
 import Icon from "@mdi/react";
-import { mdiDeleteAlertOutline, mdiFileEditOutline } from "@mdi/js";
+import {
+  mdiDeleteAlertOutline,
+  mdiEyeOutline,
+  mdiFileEditOutline,
+  mdiWhatsapp,
+} from "@mdi/js";
 import { useRouter } from "next/router";
 
 export default function ListComponent() {
@@ -41,12 +46,6 @@ export default function ListComponent() {
     });
   }
 
-  const NoRowsOverlay = () => (
-    <GridOverlay>
-      <div style={{ padding: 16 }}>Nenhum registro encontrado</div>
-    </GridOverlay>
-  );
-
   const columns: GridColDef[] = [
     { field: "name", headerName: "Nome", flex: 1 },
     { field: "cpf", headerName: "CPF", flex: 1 },
@@ -66,7 +65,23 @@ export default function ListComponent() {
       flex: 1,
       renderCell: (params) => {
         return (
-          <Box>
+          <Box display="flex" justifyContent="space-evenly">
+            <IconButton
+              onClick={() =>
+                window.open(
+                  `https://web.whatsapp.com/send?phone=55${params.row.phone.replace(
+                    /[\s\(\)-]/g,
+                    ""
+                  )}`,
+                  "_blank"
+                )
+              }
+            >
+              <Icon style={{ color: "green" }} path={mdiWhatsapp} size={1} />
+            </IconButton>
+            <IconButton onClick={() => router.push(`view/${params.row.id}`)}>
+              <Icon style={{ color: "orange" }} path={mdiEyeOutline} size={1} />
+            </IconButton>
             <IconButton onClick={() => router.push(`update/${params.row.id}`)}>
               <Icon
                 style={{ color: "#1976D2" }}
@@ -124,7 +139,6 @@ export default function ListComponent() {
               },
             }}
             pageSizeOptions={[5]}
-            checkboxSelection
             disableRowSelectionOnClick
           />
         )}

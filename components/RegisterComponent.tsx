@@ -27,9 +27,13 @@ type FormData = z.infer<typeof formSchema> & { guid?: string };
 
 interface RegisterComponentProps {
   id?: string;
+  readOnly?: boolean;
 }
 
-export default function RegisterComponent({ id }: RegisterComponentProps) {
+export default function RegisterComponent({
+  id,
+  readOnly,
+}: RegisterComponentProps) {
   const router = useRouter();
   const {
     register,
@@ -37,6 +41,7 @@ export default function RegisterComponent({ id }: RegisterComponentProps) {
     control,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -123,6 +128,15 @@ export default function RegisterComponent({ id }: RegisterComponentProps) {
     reader.readAsDataURL(file);
   };
 
+  const textStyle = {
+    mt: 1,
+    mb: 1,
+    fontSize: 16,
+    fontWeight: 500,
+    border: "1px solid #CCC",
+    padding: "1rem",
+  };
+
   return (
     <Box
       component="form"
@@ -131,130 +145,170 @@ export default function RegisterComponent({ id }: RegisterComponentProps) {
         display: "flex",
         flexDirection: "column",
         gap: 2,
-        width: "400px",
+        maxWidth: "400px",
         margin: "auto",
         mt: 5,
       }}
     >
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{
-          color: "#1976D2",
-          fontSize: "2rem",
-          fontWeight: 600,
-          textAlign: "center",
-        }}
-      >
-        Formulário de Cadastro
-      </Typography>
+      {!readOnly && (
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{
+            color: "#1976D2",
+            fontSize: "2rem",
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          Formulário de Cadastro
+        </Typography>
+      )}
 
-      <Controller
-        name="photo"
-        control={control}
-        render={({ field }) => (
-          <>
-            <Button variant="contained" component="label">
-              Carregar Foto
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </Button>
-            {photoPreview && (
-              <Box
-                component="img"
-                src={photoPreview}
-                alt="Pré-visualização da Foto"
-                sx={{
-                  width: 100,
-                  height: 100,
-                  mt: 2,
-                  margin: "auto",
-                  borderRadius: 999,
-                  objectFit: "cover",
-                  objectPosition: "50% 50%",
-                }}
-              />
-            )}
-            {errors.photo && (
-              <Typography color="error" variant="body2">
-                {errors.photo.message}
-              </Typography>
-            )}
-          </>
-        )}
-      />
+      {!readOnly ? (
+        <Controller
+          name="photo"
+          control={control}
+          render={({ field }) => (
+            <>
+              <Button variant="contained" component="label">
+                Carregar Foto
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </Button>
+              {photoPreview && (
+                <Box
+                  component="img"
+                  src={photoPreview}
+                  alt="Pré-visualização da Foto"
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    mt: 2,
+                    margin: "auto",
+                    borderRadius: 999,
+                    objectFit: "cover",
+                    objectPosition: "50% 50%",
+                  }}
+                />
+              )}
+              {errors.photo && (
+                <Typography color="error" variant="body2">
+                  {errors.photo.message}
+                </Typography>
+              )}
+            </>
+          )}
+        />
+      ) : (
+        photoPreview && (
+          <Box
+            component="img"
+            src={photoPreview}
+            alt="Pré-visualização da Foto"
+            sx={{
+              width: 100,
+              height: 100,
+              mt: 2,
+              margin: "auto",
+              borderRadius: 999,
+              objectFit: "cover",
+              objectPosition: "50% 50%",
+            }}
+          />
+        )
+      )}
 
-      <TextField
-        label="Nome"
-        InputLabelProps={{ shrink: true }}
-        {...register("name")}
-        error={!!errors.name}
-        helperText={errors.name?.message}
-        variant="outlined"
-      />
+      {!readOnly ? (
+        <TextField
+          label="Nome"
+          InputLabelProps={{ shrink: true }}
+          {...register("name")}
+          error={!!errors.name}
+          helperText={errors.name?.message}
+          variant="outlined"
+        />
+      ) : (
+        <Typography sx={textStyle}>{watch("name")}</Typography>
+      )}
 
-      <Controller
-        name="cpf"
-        control={control}
-        render={({ field }) => (
-          <InputMask
-            mask="999.999.999-99"
-            value={field.value}
-            onChange={field.onChange}
-          >
-            {(inputProps) => (
-              <TextField
-                {...inputProps}
-                label="CPF"
-                InputLabelProps={{ shrink: true }}
-                error={!!errors.cpf}
-                helperText={errors.cpf?.message}
-                variant="outlined"
-              />
-            )}
-          </InputMask>
-        )}
-      />
+      {!readOnly ? (
+        <Controller
+          name="cpf"
+          control={control}
+          render={({ field }) => (
+            <InputMask
+              mask="999.999.999-99"
+              value={field.value}
+              onChange={field.onChange}
+            >
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label="CPF"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.cpf}
+                  helperText={errors.cpf?.message}
+                  variant="outlined"
+                />
+              )}
+            </InputMask>
+          )}
+        />
+      ) : (
+        <Typography sx={textStyle}>{watch("cpf")}</Typography>
+      )}
 
-      <TextField
-        label="E-mail"
-        {...register("email")}
-        InputLabelProps={{ shrink: true }}
-        error={!!errors.email}
-        helperText={errors.email?.message}
-        variant="outlined"
-      />
+      {!readOnly ? (
+        <TextField
+          label="E-mail"
+          {...register("email")}
+          InputLabelProps={{ shrink: true }}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          variant="outlined"
+        />
+      ) : (
+        <Typography sx={textStyle}>{watch("email")}</Typography>
+      )}
 
-      <Controller
-        name="phone"
-        control={control}
-        render={({ field }) => (
-          <InputMask
-            mask="(99) 99999-9999"
-            value={field.value}
-            onChange={field.onChange}
-          >
-            {(inputProps) => (
-              <TextField
-                {...inputProps}
-                label="Telefone"
-                InputLabelProps={{ shrink: true }}
-                error={!!errors.phone}
-                helperText={errors.phone?.message}
-                variant="outlined"
-              />
-            )}
-          </InputMask>
-        )}
-      />
+      {!readOnly ? (
+        <Controller
+          name="phone"
+          control={control}
+          render={({ field }) => (
+            <InputMask
+              mask="(99) 99999-9999"
+              value={field.value}
+              onChange={field.onChange}
+            >
+              {(inputProps) => (
+                <TextField
+                  {...inputProps}
+                  label="Telefone"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message}
+                  variant="outlined"
+                />
+              )}
+            </InputMask>
+          )}
+        />
+      ) : (
+        <Typography sx={textStyle}>{watch("phone")}</Typography>
+      )}
 
-      <Button type="submit" variant="contained" color="primary">
-        {id ? "Atualizar" : "Cadastrar"}
-      </Button>
+      {!readOnly && (
+        <Button type="submit" variant="contained" color="primary">
+          {id ? "Atualizar" : "Cadastrar"}
+        </Button>
+      )}
+
       <Button onClick={() => router.back()} variant="outlined" color="primary">
         Voltar
       </Button>
