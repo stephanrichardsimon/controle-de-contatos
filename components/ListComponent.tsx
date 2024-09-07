@@ -1,9 +1,7 @@
 import * as React from "react";
+import { Button, IconButton, Typography, TextField } from "@mui/material";
 import Box from "@mui/material/Box";
-import { DataGrid, GridColDef, GridOverlay } from "@mui/x-data-grid";
-import { Button, IconButton, Typography } from "@mui/material";
-import api from "../api/api";
-import Swal from "sweetalert2";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Icon from "@mdi/react";
 import {
   mdiDeleteAlertOutline,
@@ -12,10 +10,14 @@ import {
   mdiWhatsapp,
 } from "@mdi/js";
 import { useRouter } from "next/router";
+import Swal from "sweetalert2";
+import api from "../api/api";
 
 export default function ListComponent() {
   const router = useRouter();
   const [rows, setRows] = React.useState<any[]>([]);
+  const [filteredRows, setFilteredRows] = React.useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   function remove(id) {
     Swal.fire({
@@ -35,30 +37,47 @@ export default function ListComponent() {
           })
           .catch(() => {
             Swal.fire({
-              title: "Oh,não!",
+              title: "Oh, não!",
               text: "Falha ao remover!",
               icon: "error",
             });
           });
-      } else if (result.isDenied) {
-        return;
       }
     });
   }
 
   const columns: GridColDef[] = [
+    {
+      field: "photo",
+      headerName: "Avatar",
+      headerAlign: "center",
+      flex: 1,
+      renderCell: (params) => {
+        const img = params.row.photo ? params.row.photo : "/noPhoto.jpg";
+        return (
+          <Box sx={{ display: "flex", height: "3rem" }}>
+            <Box
+              component="img"
+              src={img}
+              alt="Pré-visualização da Foto"
+              sx={{
+                width: 35,
+                height: 35,
+                mt: 2,
+                margin: "auto",
+                borderRadius: 999,
+                objectFit: "cover",
+                objectPosition: "50% 50%",
+              }}
+            />
+          </Box>
+        );
+      },
+    },
     { field: "name", headerName: "Nome", flex: 1 },
     { field: "cpf", headerName: "CPF", flex: 1 },
     { field: "email", headerName: "E-mail", flex: 1 },
     { field: "phone", headerName: "Contato", flex: 1 },
-    {
-      field: "photo",
-      headerName: "Tem foto",
-      flex: 1,
-      renderCell: (params) => {
-        return params.value ? "Sim" : "Não";
-      },
-    },
     {
       field: "actions",
       headerName: "Ações",
@@ -105,10 +124,14 @@ export default function ListComponent() {
   const fetchData = React.useCallback(async () => {
     try {
       const response = await api.get("/contacts");
-      setRows(response.data);
+      const sortedData = response.data.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+      setRows(sortedData);
+      setFilteredRows(sortedData);
     } catch (err) {
       Swal.fire({
-        title: "Oh,não!",
+        title: "Oh, não!",
         text: "Falha ao buscar registros!",
         icon: "error",
       });
@@ -119,28 +142,46 @@ export default function ListComponent() {
     fetchData();
   }, [fetchData]);
 
+  const handleSearch = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    setFilteredRows(
+      rows.filter((row) => row.name.toLowerCase().includes(value.toLowerCase()))
+    );
+  };
+
   return (
     <Box sx={{ height: 400, width: "100%" }}>
+      <TextField
+        label="Buscar por nome"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={searchTerm}
+        onChange={handleSearch}
+      />
       <Box sx={{ height: 400, width: "100%" }}>
-        {rows.length === 0 ? (
+        {filteredRows.length === 0 ? (
           <Typography mt={8} variant="h6" align="center" color="textSecondary">
             Nenhum registro encontrado
           </Typography>
         ) : (
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            getRowId={(row) => row.guid}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
+          <Box sx={{ backgroundColor: "#FFF" }}>
+            <DataGrid
+              rows={filteredRows}
+              columns={columns}
+              getRowId={(row) => row.guid}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
                 },
-              },
-            }}
-            pageSizeOptions={[5]}
-            disableRowSelectionOnClick
-          />
+              }}
+              pageSizeOptions={[5]}
+              disableRowSelectionOnClick
+            />
+          </Box>
         )}
       </Box>
       <Box mt={5} textAlign="center">

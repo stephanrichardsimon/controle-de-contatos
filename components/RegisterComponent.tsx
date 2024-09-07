@@ -55,16 +55,13 @@ export default function RegisterComponent({
   const fetchData = useCallback(async () => {
     try {
       const response = await api.get(`/contacts/${id}`);
+      console.log("Response:", response);
       reset(response.data);
       if (response.data.photo) {
         setPhotoPreview(response.data.photo);
       }
     } catch (err) {
-      Swal.fire({
-        title: "Oh,não!",
-        text: "Falha ao buscar registros!",
-        icon: "error",
-      });
+      console.error("Fetch Error:", err);
     }
   }, [id, reset]);
 
@@ -113,6 +110,12 @@ export default function RegisterComponent({
           });
         });
     }
+  };
+
+  const removePhoto = () => {
+    setValue("photo", "");
+    setPhotoPreview(null);
+    watch("photo");
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,7 +168,7 @@ export default function RegisterComponent({
         </Typography>
       )}
 
-      {!readOnly ? (
+      {!readOnly && (
         <Controller
           name="photo"
           control={control}
@@ -180,47 +183,32 @@ export default function RegisterComponent({
                   onChange={handleImageChange}
                 />
               </Button>
-              {photoPreview && (
-                <Box
-                  component="img"
-                  src={photoPreview}
-                  alt="Pré-visualização da Foto"
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    mt: 2,
-                    margin: "auto",
-                    borderRadius: 999,
-                    objectFit: "cover",
-                    objectPosition: "50% 50%",
-                  }}
-                />
-              )}
-              {errors.photo && (
-                <Typography color="error" variant="body2">
-                  {errors.photo.message}
-                </Typography>
-              )}
             </>
           )}
         />
-      ) : (
-        photoPreview && (
-          <Box
-            component="img"
-            src={photoPreview}
-            alt="Pré-visualização da Foto"
-            sx={{
-              width: 100,
-              height: 100,
-              mt: 2,
-              margin: "auto",
-              borderRadius: 999,
-              objectFit: "cover",
-              objectPosition: "50% 50%",
-            }}
-          />
-        )
+      )}
+      <Box
+        component="img"
+        src={photoPreview ? photoPreview : "/noPhoto.jpg"}
+        alt="Pré-visualização da Foto"
+        sx={{
+          width: 100,
+          height: 100,
+          mt: 2,
+          margin: "auto",
+          borderRadius: 999,
+          objectFit: "cover",
+          objectPosition: "50% 50%",
+        }}
+      />
+      {watch("photo") && !readOnly && (
+        <Button
+          onClick={() => removePhoto()}
+          variant="outlined"
+          component="label"
+        >
+          Remover foto
+        </Button>
       )}
 
       {!readOnly ? (
